@@ -2,8 +2,11 @@
 
 Para empezar el ejercicio práctico lo primero que he hecho ha sido crearme una cuenta en DBT y Google Cloud. Utilizando los siguientes vídeos he conseguido crear un proyecto en DBT asociado a un conjunto de datos en Google Cloud a través de los cuales se van a realizar las consultas de código en SQL pertinentes:
 
-[![](https://markdown-videos.data.dev/youtube/6zDTbM6OUcs&ab_channel=JieJenn)](https://www.youtube.com/watch?v=6zDTbM6OUcs&ab_channel=JieJenn)
+Vídeo: https://youtu.be/6zDTbM6OUcs?si=wVvPbcAr3hHcxqRw
+[![Alt text](https://img.youtube.com/vi/wVvPbcAr3hHcxqRw/0.jpg)](https://youtu.be/6zDTbM6OUcs?si=wVvPbcAr3hHcxqRw)
 
-https://www.youtube.com/watch?v=6zDTbM6OUcs&ab_channel=JieJenn
+Vídeo: https://youtu.be/ucA27rM043o?si=pBuWUOYmgtoI2Lhj
+[![Alt text](https://img.youtube.com/vi/pBuWUOYmgtoI2Lhj/0.jpg)](https://youtu.be/ucA27rM043o?si=pBuWUOYmgtoI2Lhj)
 
-https://www.youtube.com/watch?v=ucA27rM043o&ab_channel=JieJenn
+Vídeo: https://youtu.be/_C_pYeuF6_s?si=bdDSAQIU62k_nS5m
+[![Alt text](https://img.youtube.com/vi/bdDSAQIU62k_nS5m/0.jpg)](https://youtu.be/_C_pYeuF6_s?si=bdDSAQIU62k_nS5m)
