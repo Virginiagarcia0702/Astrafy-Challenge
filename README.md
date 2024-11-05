@@ -37,6 +37,8 @@ SELECT DISTINCT *  FROM astrf_sales;
 -- 28361 total unique entries
 ```
 
+All of the SQL scripts can be found within the folder /Astrafy_challenge/models.
+
 ## Exercise 1
 ### What is the number of orders in the year 2023?
 We are using the command `count()` to count the number of orders in the table `astrf_orders`.
