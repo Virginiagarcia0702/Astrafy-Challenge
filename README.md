@@ -20,15 +20,15 @@ https://console.cloud.google.com/bigquery?ws=!1m4!1m3!3m2!1ssql-for-bigquery-440
 
 ## Exercises development
 Once the dataset model is set, I did some basic analysis on the tables 
-_astrf_orders_ and _astrf_sales_ in order to better understand their 
+`astrf_orders` and `astrf_sales` in order to better understand their 
 content and their possible connections. 
-On the _astrf_orders_ table we find information about the orders generated
-by the different customers, the dates and the amount spent on each transaction (**ca_ht**).
-On the _astrf_sales, on the other hand, we have disaggregated information aobut the specific
+On the `astrf_orders` table we find information about the orders generated
+by the different customers, the dates and the amount spent on each transaction (`ca_ht`).
+On the `astrf_sales`, on the other hand, we have disaggregated information aobut the specific
 products sold for each transaction, their price and also the quantity sold.
-Both tables can be join from the fields **transaction_id** and **orders_id** or either **clients_id** and **customer_id** as they refer to the same information.
+Both tables can be join from the fields `transaction_id` and `orders_id` or either `clients_id` and `customer_id` as they refer to the same information.
 
-It is relevant to highlight that I am used to work on Oracle SQL and therefore all of the correspondent function equivalences are being consulted either via ChatGPT or StackOverflow.
+It is relevant to highlight that I am used to work on Oracle SQL and therefore all of the correspondent function equivalences with BigQuery are being consulted either via ChatGPT or StackOverflow.
 
 ```sql
 SELECT DISTINCT * FROM astrf_orders
@@ -39,8 +39,8 @@ SELECT DISTINCT *  FROM astrf_sales;
 
 ## Exercise 1
 ### What is the number of orders in the year 2023?
-I am using the command `count()` to count the number of orders in the table _astrf_orders_.
-(Note that I am not using ```distinct count``` as **orders_id** in _astrf_orders_ have already unique values).
+We are using the command `count()` to count the number of orders in the table `astrf_orders`.
+(Note that we are not using ```distinct count``` as `orders_id` in `astrf_orders` have already unique values).
 
 ```sql
 SELECT COUNT(orders_id) AS orders
@@ -50,12 +50,14 @@ WHERE FORMAT_DATE('%Y', date_date) = '2023'; --Used to specify the year 2023
 
 ## Exercise 2
 ### What is the number of orders per month in the year 2023?
-
+We are using the command `count(orders_id)` as before in order to count the amount of orders per month. 
+For the date we are using a formatting function `FORMAT_DATE('%b-%Y', date_date)` to show the date as 'year-month' (which now is a `STRING`).
+Finally, we order the results by `year_month` using the function `PARSE_DATE('%b-%Y', year_month)`, which converts the year_month again in a `DATE` in order to chronologically order the results using the command `ASC`. 
 
 ```sql
 SELECT 
     COUNT(orders_id) AS orders
-    ,FORMAT_DATE('%b-%Y', date_date) AS year_month
+    ,FORMAT_DATE('%b-%Y', date_date) AS year_month --%b -> short month, %Y -> complete year
 FROM `sql-for-bigquery-440715.dbt_virginiagarcia0702.astrf_orders`
 WHERE FORMAT_DATE('%Y', date_date) = '2023'
 GROUP BY 
@@ -66,6 +68,11 @@ ORDER BY
 
 ## Exercise 3
 ### What is the average number of products per order for each month of the year 2023?
+Within the created CTE we calculate the total quantity of products for each order by summing the `qty` field in `astrf_sales`
+grouping by each unique `orders_id` and `year_month` combination to get the total quantity for each order per month.
+To do that, we need to join the `astrf_orders` table with the `astrf_sales` table using the co-relation between `orders_id` and `transaction_id`. 
+Finally we calculate the average number of products per order for each month, rounding the result: `ROUND(AVG(AUX.total_products_per_order))`.
+
 ```sql
 WITH AUX AS(
 SELECT 
@@ -91,6 +98,9 @@ ORDER BY
 
 ## Exercise 4
 ### Create a table (1 line per order) for all orders in the year 2022 and 2023; this table is similar to orders with an additional column: the qty_product column that gives the quantity of products in the order, for all orders in 2022 and 2023
+With this auxiliary table we are selecting the total quantity of products for each order. 
+We are using the `SUM`function to get the total quantity of products (`qty`) associated with each order and if there are no matching records in `astrf_sales` for an order, `IFNULL` sets the `qty_product` to 0.
+
 ```sql
 WITH astrf_orders_with_qty_product AS (
     SELECT 
@@ -126,6 +136,9 @@ months prior to this order, the customer had already placed at least 4
 orders or more**
 
 ### Calculate for each order placed in 2023, the segment of this order and create a table (1 line per order) for all orders of the year 2023 only; with an additional column: the order_segmentation column which gives the segment of this order
+First, we create an auxiliary table `segmented_orders` with data from each order in 2023 and a subquery which calculates how many previous orders the same customer had in the preceding 12 months by `prior_12_months_orders` (excluding the current order's date itself).
+The result is a table with each order, along with the count of the customer’s previous orders in the past 12 months.
+The final query segments each order based on the number or orders made in the preivous 12 months as demanded in the exercise (new,returning and VIP).
 
 ```sql
 WITH ordered_data AS (
@@ -133,15 +146,11 @@ WITH ordered_data AS (
         o.date_date,
         o.customers_id,
         o.orders_id,
-        o.ca_ht,
-        ROW_NUMBER() OVER (
-            PARTITION BY o.customers_id
-            ORDER BY o.date_date
-        ) AS order_rank -- Jerarquiza todos los pedidos de cada cliente por fecha
+        o.ca_ht
     FROM
         `sql-for-bigquery-440715.dbt_virginiagarcia0702.astrf_orders` o
     WHERE
-        FORMAT_DATE('%Y', o.date_date) = '2023' -- Filtramos solo los pedidos de 2023
+        FORMAT_DATE('%Y', o.date_date) = '2023'
 ),
 
 segmented_orders AS (
@@ -150,14 +159,13 @@ segmented_orders AS (
         current_order.customers_id,
         current_order.orders_id,
         current_order.ca_ht,
-        current_order.order_rank,
         (
             SELECT COUNT(*)
             FROM ordered_data prior_orders
             WHERE prior_orders.customers_id = current_order.customers_id
               AND prior_orders.date_date >= DATE_SUB(current_order.date_date, INTERVAL 12 MONTH)
               AND prior_orders.date_date < current_order.date_date
-        ) AS prior_12_months_orders -- Calcula los pedidos en los últimos 12 meses
+        ) AS prior_12_months_orders -- last 12 months 
     FROM
         ordered_data current_order
 )

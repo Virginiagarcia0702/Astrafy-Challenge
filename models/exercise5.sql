@@ -2,38 +2,23 @@
 {{ config(materialized='table') }}
 
 
-WITH ordered_data AS (
+WITH segmented_orders AS (
     SELECT
         o.date_date,
         o.customers_id,
         o.orders_id,
         o.ca_ht,
-        ROW_NUMBER() OVER (
-            PARTITION BY o.customers_id
-            ORDER BY o.date_date
-        ) AS order_rank -- Jerarquiza todos los pedidos de cada cliente por fecha
+        (
+            SELECT COUNT(*)
+            FROM `sql-for-bigquery-440715.dbt_virginiagarcia0702.astrf_orders` prior_orders
+            WHERE prior_orders.customers_id = o.customers_id
+              AND prior_orders.date_date >= DATE_SUB(o.date_date, INTERVAL 12 MONTH)
+              AND prior_orders.date_date < o.date_date
+        ) AS prior_12_months_orders -- Calculates the number of orders in the last 12 months
     FROM
         `sql-for-bigquery-440715.dbt_virginiagarcia0702.astrf_orders` o
     WHERE
-        FORMAT_DATE('%Y', o.date_date) = '2023' -- Filtramos solo los pedidos de 2023
-),
-
-segmented_orders AS (
-    SELECT
-        current_order.date_date,
-        current_order.customers_id,
-        current_order.orders_id,
-        current_order.ca_ht,
-        current_order.order_rank,
-        (
-            SELECT COUNT(*)
-            FROM ordered_data prior_orders
-            WHERE prior_orders.customers_id = current_order.customers_id
-              AND prior_orders.date_date >= DATE_SUB(current_order.date_date, INTERVAL 12 MONTH)
-              AND prior_orders.date_date < current_order.date_date
-        ) AS prior_12_months_orders -- Calcula los pedidos en los últimos 12 meses
-    FROM
-        ordered_data current_order
+        FORMAT_DATE('%Y', o.date_date) = '2023' -- Filters only orders from 2023
 )
 
 SELECT
