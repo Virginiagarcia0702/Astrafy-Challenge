@@ -20,15 +20,15 @@ https://console.cloud.google.com/bigquery?ws=!1m4!1m3!3m2!1ssql-for-bigquery-440
 
 ## Exercises development
 Once the dataset model is set, I did some basic analysis on the tables 
-_astrf_orders_ and _astrf_sales_ in order to better understand their 
+`astrf_orders` and `astrf_sales` in order to better understand their 
 content and their possible connections. 
-On the _astrf_orders_ table we find information about the orders generated
-by the different customers, the dates and the amount spent on each transaction (**ca_ht**).
-On the _astrf_sales, on the other hand, we have disaggregated information aobut the specific
+On the `astrf_orders` table we find information about the orders generated
+by the different customers, the dates and the amount spent on each transaction (`ca_ht`).
+On the `astrf_sales`, on the other hand, we have disaggregated information aobut the specific
 products sold for each transaction, their price and also the quantity sold.
-Both tables can be join from the fields **transaction_id** and **orders_id** or either **clients_id** and **customer_id** as they refer to the same information.
+Both tables can be join from the fields `transaction_id` and `orders_id` or either `clients_id` and `customer_id` as they refer to the same information.
 
-It is relevant to highlight that I am used to work on Oracle SQL and therefore all of the correspondent function equivalences are being consulted either via ChatGPT or StackOverflow.
+It is relevant to highlight that I am used to work on Oracle SQL and therefore all of the correspondent function equivalences with BigQuery are being consulted either via ChatGPT or StackOverflow.
 
 ```sql
 SELECT DISTINCT * FROM astrf_orders
@@ -39,8 +39,8 @@ SELECT DISTINCT *  FROM astrf_sales;
 
 ## Exercise 1
 ### What is the number of orders in the year 2023?
-I am using the command `count()` to count the number of orders in the table _astrf_orders_.
-(Note that I am not using ```distinct count``` as **orders_id** in _astrf_orders_ have already unique values).
+We are using the command `count()` to count the number of orders in the table `astrf_orders`.
+(Note that we are not using ```distinct count``` as `orders_id` in `astrf_orders` have already unique values).
 
 ```sql
 SELECT COUNT(orders_id) AS orders
@@ -50,12 +50,14 @@ WHERE FORMAT_DATE('%Y', date_date) = '2023'; --Used to specify the year 2023
 
 ## Exercise 2
 ### What is the number of orders per month in the year 2023?
-
+We are using the command `count(orders_id)` as before in order to count the amount of orders per month. 
+For the date we are using a formatting function `FORMAT_DATE('%b-%Y', date_date)` to show the date as 'year-month' (which now is a `STRING`).
+Finally, we order the results by `year_month` using the function `PARSE_DATE('%b-%Y', year_month)`, which converts the year_month again in a `DATE` in order to chronologically order the results using the command `ASC`. 
 
 ```sql
 SELECT 
     COUNT(orders_id) AS orders
-    ,FORMAT_DATE('%b-%Y', date_date) AS year_month
+    ,FORMAT_DATE('%b-%Y', date_date) AS year_month --%b -> short month, %Y -> complete year
 FROM `sql-for-bigquery-440715.dbt_virginiagarcia0702.astrf_orders`
 WHERE FORMAT_DATE('%Y', date_date) = '2023'
 GROUP BY 
@@ -66,6 +68,11 @@ ORDER BY
 
 ## Exercise 3
 ### What is the average number of products per order for each month of the year 2023?
+Within the created CTE we calculate the total quantity of products for each order by summing the `qty` field in _astrf_sales_
+grouping by each unique `orders_id` and `year_month` combination to get the total quantity for each order per month.
+To do that, we need to join the `astrf_orders` table with the `astrf_sales` table using the co-relation between `orders_id` and `transaction_id`. 
+Finally we calculate the average number of products per order for each month, rounding the result: `ROUND(AVG(AUX.total_products_per_order))`.
+
 ```sql
 WITH AUX AS(
 SELECT 
