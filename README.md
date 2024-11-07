@@ -6,13 +6,10 @@ In order to start with the coding-challenge, I've used the dbt transformation wo
 I attach the following videos that have helped me to familiarize with the tools previously mentioned:
 
 Video: https://youtu.be/6zDTbM6OUcs?si=wVvPbcAr3hHcxqRw
-[![](https://img.youtube.com/vi/wVvPbcAr3hHcxqRw/0.jpg)](https://youtu.be/6zDTbM6OUcs?si=wVvPbcAr3hHcxqRw)
 
 Video: https://youtu.be/ucA27rM043o?si=pBuWUOYmgtoI2Lhj
-[![](https://img.youtube.com/vi/pBuWUOYmgtoI2Lhj/0.jpg)](https://youtu.be/ucA27rM043o?si=pBuWUOYmgtoI2Lhj)
 
 Video: https://youtu.be/_C_pYeuF6_s?si=bdDSAQIU62k_nS5m
-[![](https://img.youtube.com/vi/bdDSAQIU62k_nS5m/0.jpg)](https://youtu.be/_C_pYeuF6_s?si=bdDSAQIU62k_nS5m)
 
 The datasets can be accessed from:
 
@@ -28,14 +25,14 @@ On the `astrf_sales`, on the other hand, we have disaggregated information aobut
 products sold for each transaction, their price and also the quantity sold.
 Both tables can be join from the fields `transaction_id` and `orders_id` or either `clients_id` and `customer_id` as they refer to the same information.
 
-It is relevant to highlight that I am used to work on Oracle SQL and therefore all of the correspondent function equivalences with BigQuery are being consulted either via ChatGPT or StackOverflow.
-
 ```sql
 SELECT DISTINCT * FROM astrf_orders
 -- we find 3661 distinct orders
 SELECT DISTINCT *  FROM astrf_sales;
 -- 28361 total unique entries
 ```
+
+It is relevant to highlight that I am used to work on Oracle SQL and therefore all of the correspondent function equivalences with BigQuery are being consulted either via ChatGPT or StackOverflow.
 
 All of the SQL scripts can be found within the folder /Astrafy_challenge/models.
 
@@ -187,3 +184,14 @@ FROM
 ORDER BY 
     customers_id
 ```
+
+## Design Challenge
+Initially I designed a KPI dashboard in Power BI and then created another one in Looker Studio as well. For this last design challenge I needed to search information about the tool (as I am used to work with Power BI).
+Bellow you can find the link to the whole report:
+
+https://lookerstudio.google.com/reporting/434ce7d6-83ac-476c-a542-3d4e59f768a5
+
+
+Note that I had to investigate how to implement a Forecast solution in BigQuery for visualization in Looker Studio. 
+
+Video: https://youtu.be/dwOt68CevYA?si=9pLS_-14iWKigIQ0
